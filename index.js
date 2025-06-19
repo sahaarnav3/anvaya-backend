@@ -159,6 +159,68 @@ app.get("/leads", async (req, res) => {
   }
 });
 
+//Route to update Leads
+app.put("/leads/:id", async (req, res) => {
+  try {
+    if (!req.body.name)
+      return res
+        .status(400)
+        .json({ error: "Invalid input: 'name' is required." });
+
+    if (!req.body.source)
+      return res
+        .status(400)
+        .json({ error: "Invalid input: 'source' is required." });
+
+    if (!req.body.salesAgent)
+      return res
+        .status(400)
+        .json({ error: "Invalid input: 'SalesAgentID' is required." });
+    else {
+      try {
+        const objectId = new mongoose.Types.ObjectId(req.body.salesAgent); // this deprecation message is not correct here. (Correct only in case when you're trying to convert a number into ObjectId).
+        const salesAgentResponse = await SalesAgent.findById(objectId);
+        if (!salesAgentResponse)
+          return res.status(404).json({
+            error: `Sales agent with ID '${req.body.salesAgent}' not found.`,
+          });
+      } catch (error) {
+        console.error("Invalid ObjectId string:", error.message);
+        return res.status(400).json({
+          error: "Invalid input: 'SalesAgentId' is not a valid ID format.",
+        });
+      }
+    }
+    if (!req.body.status)
+      return res
+        .status(400)
+        .json({ error: "Invalid input: 'status' is required." });
+
+    if (!req.body.timeToClose || req.body.timeToClose < 1)
+      return res.status(400).json({
+        error:
+          "Invalid input: 'time to close' is required and should be a positive integer.",
+      });
+
+    if (!req.body.priority)
+      return res
+        .status(400)
+        .json({ error: "Invalid input: 'priority' is required." });
+
+    const leadResponse = await Lead.findByIdAndUpdate(req.params.id, req.body, {new: true}).populate('salesAgent', 'name').exec();
+    if(!leadResponse)
+      return res.status(404).json({error: `Lead with ID '${req.params.id}' not found.`});
+    else
+      return res.status(200).json(leadResponse);
+  } catch (error) {
+    console.log(err);
+    res.status(500).json({
+      error:
+        "Some error occurred with the request itself. Please check logs and try again.",
+    });
+  }
+});
+
 // Route to create a sales agent.
 app.post("/agents", async (req, res) => {
   try {
