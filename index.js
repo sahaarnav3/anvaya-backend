@@ -378,6 +378,20 @@ app.get("/report/last-week", async(req, res) => {
   }
 });
 
+//Route to get total Leads in pipeline (Excluding closed ones.)
+app.get("/report/pipeline", async(req, res) => {
+  try {
+    const openLeads = await Lead.find({ closedAt: { $in: [null, undefined] } });
+    res.status(200).json({ "totalLeadsInPipeline": openLeads.length });
+    
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error:
+        "Some error occurred with the request itself. Please check logs and try again.",
+    });
+  }
+});
 
 app.listen(PORT, () => {
   console.log("Server is running on PORT:", PORT);
