@@ -280,6 +280,22 @@ app.post("/agents", async (req, res) => {
   }
 });
 
+//Route to fetch all sales agent.
+app.get("/agents", async(req, res) => {
+  try {
+    const agentResponse = await SalesAgent.find();
+    if(!agentResponse)
+      return res.status(404).json({error: "No sales present in database."});
+    return res.status(200).json(agentResponse);
+  } catch (error) {
+    console.log(err);
+    res.status(500).json({
+      error:
+        "Some error occurred with the request itself. Please check logs and try again.",
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log("Server is running on PORT:", PORT);
 });
