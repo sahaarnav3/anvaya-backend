@@ -302,6 +302,7 @@ app.get("/agents", async(req, res) => {
 });
 
 //----------------------------- COMMENTS API's -----------------------------//
+//Route to add comment using lead id.
 app.post("/leads/:id/comments", async(req, res) => {
   try {
     const leadResponse = await Lead.findById(req.params.id).populate('salesAgent', 'name').exec();
@@ -327,6 +328,25 @@ app.post("/leads/:id/comments", async(req, res) => {
       author: leadResponse.salesAgent.name,
       createdAt: commentResponse.createdAt
     });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error:
+        "Some error occurred with the request itself. Please check logs and try again.",
+    });
+  }
+});
+
+//Route to fetch all comments for a particular lead.
+app.get("/leads/:id/comments", async(req, res) => {
+  try {
+    const leadResponse = await Lead.findById(req.params.id).exec();
+    if(!leadResponse)
+      return res.status(404).json({error: `The lead with ID '${req.params.id}' not found.`});
+    const commentResponse = await Comment.find({lead: req.params.id}).populate('author', 'name').exec();
+    if(!commentResponse)
+      return res.status(400).json({error: "No comment for the mentioned Lead found"});
+    return res.status(200).json(commentResponse);
   } catch (error) {
     console.log(error);
     res.status(500).json({
