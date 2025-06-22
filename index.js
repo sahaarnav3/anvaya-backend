@@ -356,6 +356,29 @@ app.get("/leads/:id/comments", async(req, res) => {
   }
 });
 
+//----------------------------- REPORTING API's -----------------------------//
+
+//Route to get leads closed last week.
+app.get("/report/last-week", async(req, res) => {
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const leadResponse = await Lead.find({
+      closedAt: {$gte: sevenDaysAgo}
+    }).select('name salesAgent closedAt').populate('salesAgent', 'name').exec();
+    if(leadResponse.length <= 0)
+      return res.status(404).json({error: "No Leads found that were closed in the last 7 days."});
+    return res.status(200).json(leadResponse);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error:
+        "Some error occurred with the request itself. Please check logs and try again.",
+    });
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log("Server is running on PORT:", PORT);
 });
