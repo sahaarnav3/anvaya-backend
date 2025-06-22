@@ -9,7 +9,7 @@ const commentSchema = new mongoose.Schema({
   },
   author: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'SalesAgent',  // Reference to the SalesAgent who authored the comment
+    ref: 'SalesAgent',  // Reference to the SalesAgent who authored the comment // And keep it is default to the agent which is selected on lead details.
     required: [true, 'Author is required'],
   },
   commentText: {

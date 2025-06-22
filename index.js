@@ -4,6 +4,7 @@ const app = express();
 require("dotenv").config();
 const PORT = process.env.PORT || 3000;
 const cors = require("cors");
+const { ObjectId } = mongoose.Types; 
 
 const { initialiseDatabase } = require("./db/db.connect");
 
@@ -24,6 +25,8 @@ initialiseDatabase();
 app.get("/", (req, res) => {
   res.send("<h1>Hi, Welcome to homepage of this Backend App.</h1>");
 });
+
+//----------------------------- LEADS API's -----------------------------//
 
 // Route to create a new lead.
 app.post("/leads", async (req, res) => {
@@ -237,6 +240,8 @@ app.delete("/leads/:id", async(req, res) => {
   }
 });
 
+//----------------------------- AGENTS API's -----------------------------//
+
 // Route to create a sales agent.
 app.post("/agents", async (req, res) => {
   try {
@@ -289,6 +294,41 @@ app.get("/agents", async(req, res) => {
     return res.status(200).json(agentResponse);
   } catch (error) {
     console.log(err);
+    res.status(500).json({
+      error:
+        "Some error occurred with the request itself. Please check logs and try again.",
+    });
+  }
+});
+
+//----------------------------- COMMENTS API's -----------------------------//
+app.post("/leads/:id/comments", async(req, res) => {
+  try {
+    const leadResponse = await Lead.findById(req.params.id).populate('salesAgent', 'name').exec();
+    // console.log(leadResponse);
+    // const leadResponse = await Lead.find({_id: req.params.id}).populate('salesAgent', 'name'); // This works too.
+    if(!leadResponse)
+      return res.status(404).json({error: `Lead with ID '${req.params.id}' not found.`});
+    if(req.body.commentText.length <= 0)
+      return res.status(400).json({error: "Comment text is required."});
+    const commentBody = {
+      lead: leadResponse._id,
+      author: leadResponse.salesAgent,
+      commentText: req.body.commentText,
+    }
+    // console.log(commentBody);
+    const comment = new Comment(commentBody);
+    const commentResponse = await comment.save();
+    if(!commentResponse)
+      return res.status(400).json({error: "Some error occurred please try again."});
+    return res.status(200).json({
+      _id: commentResponse._id,
+      commentText: commentResponse.commentText,
+      author: leadResponse.salesAgent.name,
+      createdAt: commentResponse.createdAt
+    });
+  } catch (error) {
+    console.log(error);
     res.status(500).json({
       error:
         "Some error occurred with the request itself. Please check logs and try again.",
