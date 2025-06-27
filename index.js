@@ -4,7 +4,6 @@ const app = express();
 require("dotenv").config();
 const PORT = process.env.PORT || 3000;
 const cors = require("cors");
-const { ObjectId } = mongoose.Types; 
 
 const { initialiseDatabase } = require("./db/db.connect");
 
@@ -144,6 +143,8 @@ app.get("/leads", async (req, res) => {
             "Invalid input: 'source' must be one of ['Website', 'Referral', 'Cold Call', 'Advertisement', 'Email', 'Other'].",
         });
     }
+    if(req.query.leadId)
+      query._id = req.query.leadId;
     const leadResponse = await Lead.find(query)
       .populate("salesAgent", "name")
       .exec();
