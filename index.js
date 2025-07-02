@@ -201,7 +201,8 @@ app.put("/leads/:id", async (req, res) => {
         .json({ error: "Invalid input: 'status' is required." });
     } else if(req.body.status == 'Closed') {
       req.body.closedAt = new Date();
-      console.log(req.body);
+    } else {
+      req.body.closedAt = "";
     }
 
     if (!req.body.timeToClose || req.body.timeToClose < 1)
