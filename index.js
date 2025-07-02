@@ -195,10 +195,14 @@ app.put("/leads/:id", async (req, res) => {
         });
       }
     }
-    if (!req.body.status)
+    if (!req.body.status){
       return res
         .status(400)
         .json({ error: "Invalid input: 'status' is required." });
+    } else if(req.body.status == 'Closed') {
+      req.body.closedAt = new Date();
+      console.log(req.body);
+    }
 
     if (!req.body.timeToClose || req.body.timeToClose < 1)
       return res.status(400).json({
@@ -210,6 +214,8 @@ app.put("/leads/:id", async (req, res) => {
       return res
         .status(400)
         .json({ error: "Invalid input: 'priority' is required." });
+        
+    // return res.status(200);
 
     const leadResponse = await Lead.findByIdAndUpdate(req.params.id, req.body, {new: true}).populate('salesAgent', 'name').exec();
     if(!leadResponse)
