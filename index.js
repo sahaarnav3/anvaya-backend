@@ -451,6 +451,30 @@ app.get("/report/lead_closed_by_agent", async (req, res) => {
   }
 });
 
+//Route to get Lead Distribution with status.
+app.get("/report/lead_distribution_by_status", async (req, res) => {
+  try {
+    const leadDistribution = {
+      'New': 0,
+      'Contacted': 0,
+      'Qualified': 0,
+      'Proposal Sent': 0,
+      'Closed': 0
+    }
+    const leadResponse = await Lead.find().exec();
+    leadResponse.map(eachLead => {
+      leadDistribution[eachLead.status] += 1;
+    });
+    return res.status(200).json(leadDistribution);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error:
+        "Some error occurred with the request itself. Please check logs and try again.",
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log("Server is running on PORT:", PORT);
 });
