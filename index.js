@@ -72,9 +72,10 @@ app.post("/leads", async (req, res) => {
       });
 
     if (!req.body.priority)
-      return res
-        .status(400)
-        .json({ error: "Invalid input: 'priority' is required. Choose between ['Low', 'Medium', 'High']" });
+      return res.status(400).json({
+        error:
+          "Invalid input: 'priority' is required. Choose between ['Low', 'Medium', 'High']",
+      });
 
     const saveLead = await lead.save();
     res.status(200).json(saveLead);
@@ -143,8 +144,7 @@ app.get("/leads", async (req, res) => {
             "Invalid input: 'source' must be one of ['Website', 'Referral', 'Cold Call', 'Advertisement', 'Email', 'Other'].",
         });
     }
-    if(req.query.leadId)
-      query._id = req.query.leadId;
+    if (req.query.leadId) query._id = req.query.leadId;
     const leadResponse = await Lead.find(query)
       .populate("salesAgent", "name")
       .exec();
@@ -195,11 +195,11 @@ app.put("/leads/:id", async (req, res) => {
         });
       }
     }
-    if (!req.body.status){
+    if (!req.body.status) {
       return res
         .status(400)
         .json({ error: "Invalid input: 'status' is required." });
-    } else if(req.body.status == 'Closed') {
+    } else if (req.body.status == "Closed") {
       req.body.closedAt = new Date();
     } else {
       req.body.closedAt = "";
@@ -215,14 +215,19 @@ app.put("/leads/:id", async (req, res) => {
       return res
         .status(400)
         .json({ error: "Invalid input: 'priority' is required." });
-        
+
     // return res.status(200);
 
-    const leadResponse = await Lead.findByIdAndUpdate(req.params.id, req.body, {new: true}).populate('salesAgent', 'name').exec();
-    if(!leadResponse)
-      return res.status(404).json({error: `Lead with ID '${req.params.id}' not found.`});
-    else
-      return res.status(200).json(leadResponse);
+    const leadResponse = await Lead.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    })
+      .populate("salesAgent", "name")
+      .exec();
+    if (!leadResponse)
+      return res
+        .status(404)
+        .json({ error: `Lead with ID '${req.params.id}' not found.` });
+    else return res.status(200).json(leadResponse);
   } catch (error) {
     console.log(err);
     res.status(500).json({
@@ -233,12 +238,14 @@ app.put("/leads/:id", async (req, res) => {
 });
 
 //Route to delete a lead.
-app.delete("/leads/:id", async(req, res) => {
+app.delete("/leads/:id", async (req, res) => {
   try {
     const leadResponse = await Lead.findByIdAndDelete(req.params.id);
-    if(!leadResponse)
-      return res.status(404).json({error: `Lead with ID '${req.params.id}' not found.`});
-    return res.status(200).json({"message": "Lead deleted successfully."});
+    if (!leadResponse)
+      return res
+        .status(404)
+        .json({ error: `Lead with ID '${req.params.id}' not found.` });
+    return res.status(200).json({ message: "Lead deleted successfully." });
   } catch (error) {
     console.log(err);
     res.status(500).json({
@@ -294,11 +301,11 @@ app.post("/agents", async (req, res) => {
 });
 
 //Route to fetch all sales agent.
-app.get("/agents", async(req, res) => {
+app.get("/agents", async (req, res) => {
   try {
     const agentResponse = await SalesAgent.find();
-    if(!agentResponse)
-      return res.status(404).json({error: "No sales present in database."});
+    if (!agentResponse)
+      return res.status(404).json({ error: "No sales present in database." });
     return res.status(200).json(agentResponse);
   } catch (error) {
     console.log(err);
@@ -311,30 +318,36 @@ app.get("/agents", async(req, res) => {
 
 //----------------------------- COMMENTS API's -----------------------------//
 //Route to add comment using lead id.
-app.post("/leads/:id/comments", async(req, res) => {
+app.post("/leads/:id/comments", async (req, res) => {
   try {
-    const leadResponse = await Lead.findById(req.params.id).populate('salesAgent', 'name').exec();
+    const leadResponse = await Lead.findById(req.params.id)
+      .populate("salesAgent", "name")
+      .exec();
     // console.log(leadResponse);
     // const leadResponse = await Lead.find({_id: req.params.id}).populate('salesAgent', 'name'); // This works too.
-    if(!leadResponse)
-      return res.status(404).json({error: `Lead with ID '${req.params.id}' not found.`});
-    if(req.body.commentText.length <= 0)
-      return res.status(400).json({error: "Comment text is required."});
+    if (!leadResponse)
+      return res
+        .status(404)
+        .json({ error: `Lead with ID '${req.params.id}' not found.` });
+    if (req.body.commentText.length <= 0)
+      return res.status(400).json({ error: "Comment text is required." });
     const commentBody = {
       lead: leadResponse._id,
       author: leadResponse.salesAgent,
       commentText: req.body.commentText,
-    }
+    };
     // console.log(commentBody);
     const comment = new Comment(commentBody);
     const commentResponse = await comment.save();
-    if(!commentResponse)
-      return res.status(400).json({error: "Some error occurred please try again."});
+    if (!commentResponse)
+      return res
+        .status(400)
+        .json({ error: "Some error occurred please try again." });
     return res.status(200).json({
       _id: commentResponse._id,
       commentText: commentResponse.commentText,
       author: leadResponse.salesAgent.name,
-      createdAt: commentResponse.createdAt
+      createdAt: commentResponse.createdAt,
     });
   } catch (error) {
     console.log(error);
@@ -346,14 +359,20 @@ app.post("/leads/:id/comments", async(req, res) => {
 });
 
 //Route to fetch all comments for a particular lead.
-app.get("/leads/:id/comments", async(req, res) => {
+app.get("/leads/:id/comments", async (req, res) => {
   try {
     const leadResponse = await Lead.findById(req.params.id).exec();
-    if(!leadResponse)
-      return res.status(404).json({error: `The lead with ID '${req.params.id}' not found.`});
-    const commentResponse = await Comment.find({lead: req.params.id}).populate('author', 'name').exec();
-    if(!commentResponse)
-      return res.status(400).json({error: "No comment for the mentioned Lead found"});
+    if (!leadResponse)
+      return res
+        .status(404)
+        .json({ error: `The lead with ID '${req.params.id}' not found.` });
+    const commentResponse = await Comment.find({ lead: req.params.id })
+      .populate("author", "name")
+      .exec();
+    if (!commentResponse)
+      return res
+        .status(400)
+        .json({ error: "No comment for the mentioned Lead found" });
     return res.status(200).json(commentResponse);
   } catch (error) {
     console.log(error);
@@ -367,15 +386,20 @@ app.get("/leads/:id/comments", async(req, res) => {
 //----------------------------- REPORTING API's -----------------------------//
 
 //Route to get leads closed last week.
-app.get("/report/last-week", async(req, res) => {
+app.get("/report/last-week", async (req, res) => {
   try {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const leadResponse = await Lead.find({
-      closedAt: {$gte: sevenDaysAgo}
-    }).select('name salesAgent closedAt').populate('salesAgent', 'name').exec();
-    if(leadResponse.length <= 0)
-      return res.status(404).json({error: "No Leads found that were closed in the last 7 days."});
+      closedAt: { $gte: sevenDaysAgo },
+    })
+      .select("name salesAgent closedAt")
+      .populate("salesAgent", "name")
+      .exec();
+    if (leadResponse.length <= 0)
+      return res
+        .status(404)
+        .json({ error: "No Leads found that were closed in the last 7 days." });
     return res.status(200).json(leadResponse);
   } catch (error) {
     console.log(error);
@@ -387,11 +411,37 @@ app.get("/report/last-week", async(req, res) => {
 });
 
 //Route to get total Leads in pipeline (Excluding closed ones.)
-app.get("/report/pipeline", async(req, res) => {
+app.get("/report/pipeline", async (req, res) => {
   try {
     const openLeads = await Lead.find({ closedAt: { $in: [null, undefined] } });
-    res.status(200).json({ "totalLeadsInPipeline": openLeads.length });
-    
+    res.status(200).json({ totalLeadsInPipeline: openLeads.length });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error:
+        "Some error occurred with the request itself. Please check logs and try again.",
+    });
+  }
+});
+
+//Route to get all the leads closed by each Agent.
+app.get("/report/lead_closed_by_agent", async (req, res) => {
+  try {
+    const agentResponse = await SalesAgent.find();
+    if (!agentResponse)
+      return res.status(404).json({
+        error:
+          "Either no agent present or some other error occurred. Please try again.",
+      });
+    const agentArray = {};
+    agentResponse.map(eachAgent => {
+      agentArray[eachAgent.name] = 0;
+    })
+    const leadResponse = await Lead.find({ status: "Closed" }).populate('salesAgent', 'name').exec();
+    leadResponse.map(eachLead => {
+      agentArray[eachLead.salesAgent.name] += 1;
+    });
+    return res.status(200).json(agentArray);
   } catch (error) {
     console.log(error);
     res.status(500).json({
