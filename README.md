@@ -15,7 +15,7 @@ https://anvaya-backend-henna.vercel.app/
 
 ```
 git clone https://github.com/sahaarnav3/anvaya-backend.git
-cd shopping-site-backend
+cd anvaya-backend
 npm install
 npm run dev      # or `npm start` / `yarn dev`
 ```
