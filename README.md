@@ -1,4 +1,4 @@
-# Shopping Site (Back-End)
+# Anvaya CRM (Back-End)
 
 This is the back-end of Anvaya CRM Application. [Application Link](https://anvaya-frontend-nine.vercel.app/)<br>
 Built with a React frontend, Express/Node backend, MongoDB database.
