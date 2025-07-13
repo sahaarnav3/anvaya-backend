@@ -7,7 +7,7 @@ Built with a React frontend, Express/Node backend, MongoDB database.
 
 ## Base URL
 
-https://github.com/sahaarnav3/anvaya-backend.git
+https://anvaya-backend-henna.vercel.app/
 
 ---
 
